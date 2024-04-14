@@ -26,6 +26,8 @@ const create = catchError(async (request, response) => {
         `,
     });
 
+    // hash password
+
     const result = await User.create({
         firstName, lastName, email, password, country,
     });

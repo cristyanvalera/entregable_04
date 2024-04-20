@@ -11,14 +11,15 @@ const index = catchError(async (request, response) => {
 
 const create = catchError(async (request, response) => {
     const { email, firstName, frontBaseUrl, password } = request.body;
-
+    
+    const code = require('crypto').randomBytes(64).toString('hex');
     const hashedPassword = await bcrypt.hash(password, 10);
-    
-    const result = await User.create({ ...request.body, password: hashedPassword });
-    
-    sendEmailToUser(email, firstName, frontBaseUrl);
 
-    return response.status(201).json(result);
+    const user = await User.create({ ...request.body, password: hashedPassword });
+
+    sendEmailToUser(email, firstName, frontBaseUrl, code);
+
+    return response.status(201).json(user);
 });
 
 const show = catchError(async (request, response) => {
@@ -54,9 +55,7 @@ const update = catchError(async (request, response) => {
     return response.json(result[1][0]);
 });
 
-const sendEmailToUser = (email, firstName, frontBaseUrl) => {
-    const code = require('crypto').randomBytes(64).toString('hex');
-
+const sendEmailToUser = (email, firstName, frontBaseUrl, code) => {
     sendEmail({
         to: email,
         subject: 'Verify password',

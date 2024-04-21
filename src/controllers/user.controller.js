@@ -2,6 +2,7 @@ const catchError = require('../utils/catchError');
 const User = require('../models/User');
 const { sendEmail } = require('../utils/sendEmail');
 const bcrypt = require('bcrypt');
+const EmailCode = require('../models/EmailCode');
 
 const index = catchError(async (request, response) => {
     const results = await User.findAll();
@@ -10,7 +11,7 @@ const index = catchError(async (request, response) => {
 });
 
 const create = catchError(async (request, response) => {
-    const { email, firstName, frontBaseUrl, password } = request.body;   
+    const { email, firstName, frontBaseUrl, password } = request.body;
 
     const code = require('crypto').randomBytes(64).toString('hex');
 
@@ -19,6 +20,8 @@ const create = catchError(async (request, response) => {
     const user = await User.create({ ...request.body, password: hashedPassword });
 
     sendEmailToUser(email, firstName, frontBaseUrl, code);
+
+    await EmailCode.create({ code, userId: user.id });
 
     return response.status(201).json(user);
 });
@@ -73,4 +76,3 @@ const sendEmailToUser = (email, firstName, frontBaseUrl, code) => {
 };
 
 module.exports = { index, create, show, destroy, update };
-

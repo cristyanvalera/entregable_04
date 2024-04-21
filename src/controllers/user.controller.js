@@ -3,6 +3,7 @@ const User = require('../models/User');
 const { sendEmail } = require('../utils/sendEmail');
 const bcrypt = require('bcrypt');
 const EmailCode = require('../models/EmailCode');
+const jwt = require('jsonwebtoken');
 
 const index = catchError(async (request, response) => {
     const results = await User.findAll();
@@ -77,6 +78,34 @@ const verifyCode = catchError(async (request, response) => {
     return response.json(user);
 });
 
+const login = catchError(async (request, response) => {
+    const { email, password } = request.body;
+
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+        return response.status(401).json('Wrong credentials.');
+    }
+
+    const isValidPassword = await bcrypt.compare(password, user.password);
+
+    if (!isValidPassword) {
+        return response.status(401).json('Wrong credentials.');
+    }
+
+    if (!user.isVerified) {
+        return response.status(401).json('User not verified yet.');
+    }
+
+    const token = jwt.sign(
+        { user },
+        process.env.TOKEN_SECRET,
+        { expiresIn: '1d' },
+    );
+
+    return response.json({ user, token });
+});
+
 const sendEmailToUser = (email, firstName, frontBaseUrl, code) => {
     sendEmail({
         to: email,
@@ -93,4 +122,4 @@ const sendEmailToUser = (email, firstName, frontBaseUrl, code) => {
     });
 };
 
-module.exports = { index, create, show, destroy, update, verifyCode };
+module.exports = { index, create, show, destroy, update, verifyCode, login };

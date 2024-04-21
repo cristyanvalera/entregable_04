@@ -10,9 +10,10 @@ const index = catchError(async (request, response) => {
 });
 
 const create = catchError(async (request, response) => {
-    const { email, firstName, frontBaseUrl, password } = request.body;
-    
+    const { email, firstName, frontBaseUrl, password } = request.body;   
+
     const code = require('crypto').randomBytes(64).toString('hex');
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({ ...request.body, password: hashedPassword });

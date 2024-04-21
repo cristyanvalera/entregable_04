@@ -59,6 +59,24 @@ const update = catchError(async (request, response) => {
     return response.json(result[1][0]);
 });
 
+const verifyCode = catchError(async (request, response) => {
+    const { code } = request.params;
+
+    const emailCode = await EmailCode.findOne({ where: { code } });
+
+    if (!emailCode) {
+        return response.status(401).json('User not found');
+    }
+
+    const user = await User.findByPk(emailCode.userId);
+
+    await user.update({ isVerified: true });
+
+    await emailCode.destroy();
+
+    return response.json(user);
+});
+
 const sendEmailToUser = (email, firstName, frontBaseUrl, code) => {
     sendEmail({
         to: email,
@@ -75,4 +93,4 @@ const sendEmailToUser = (email, firstName, frontBaseUrl, code) => {
     });
 };
 
-module.exports = { index, create, show, destroy, update };
+module.exports = { index, create, show, destroy, update, verifyCode };

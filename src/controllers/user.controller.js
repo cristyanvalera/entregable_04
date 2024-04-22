@@ -106,6 +106,12 @@ const login = catchError(async (request, response) => {
     return response.json({ user, token });
 });
 
+const logged = catchError(async (request, response) => {
+    const user = request.user;
+
+    return response.json(user);
+});
+
 const sendEmailToUser = (email, firstName, frontBaseUrl, code) => {
     sendEmail({
         to: email,
@@ -122,4 +128,4 @@ const sendEmailToUser = (email, firstName, frontBaseUrl, code) => {
     });
 };
 
-module.exports = { index, create, show, destroy, update, verifyCode, login };
+module.exports = { index, create, show, destroy, update, verifyCode, login, logged };

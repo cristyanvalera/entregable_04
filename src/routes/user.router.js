@@ -1,5 +1,5 @@
 const express = require('express');
-const { index, create, show, destroy, update, verifyCode, login } = require('../controllers/user.controller');
+const { index, create, show, destroy, update, verifyCode, login, logged } = require('../controllers/user.controller');
 const verifyJWT = require('../utils/verifyJWT');
 
 const userRouter = express.Router();
@@ -10,6 +10,9 @@ userRouter.route('/')
 
 userRouter.route('/login')
     .post(login);
+
+userRouter.route('/me')
+    .post(verifyJWT, logged);
 
 userRouter.route('/verify/:code')
     .get(verifyCode);
